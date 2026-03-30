@@ -48,7 +48,7 @@ jobs:
             artifacts/
             !**/hostname.txt
   job2:
-    name: JOB1
+    name: JOB2
     runs-on: ubuntu-latest
     steps:
       - name: Checking current directory
