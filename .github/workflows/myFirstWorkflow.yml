@@ -3,11 +3,12 @@ name: my-first-workflow
 # To get a trigger on every push in this repo in any branch
 on: 
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+
+env:
+  ENV_TYPE: dev
+  APP_USER: JLGR
+  APP_PORT: 80
+
 jobs:
   job1:
     name: JOB1
@@ -31,6 +32,26 @@ jobs:
         with:
           name: single_file
           path: ./myartifact.txt
+      - name: Step-5 Upload from directory
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: directory_artifacts
+          path: artifacts/
+      - name: Step-6 Upload from multiple paths
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: multiple_paths
+          path: |
+            ./myartifact.txt
+            artifacts/
+      - name: Step-7 Upload from multiple paths with exclusions
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: multiple_paths_with_exclusions
+          path: |
+            ./myartifact.txt
+            artifacts/
+            !**/hostname.txt
   job2:
     name: JOB2
     needs: job1
@@ -48,5 +69,7 @@ jobs:
         run: |
           pwd
           ls -ltr
-      - name: Step for PR DEMO
-        run: exit 0
+      - name: Referring environments variables
+        run: |
+          echo "[INFO] Running Deployment for $ENV_TYPE with user $APP_USER."
+          echo "[INFO] Application is accesible on port $APP_PORT."
