@@ -25,11 +25,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run unit tests
-        run: pytest --html=report.html --self-contained-html
+        run: |
+          mkdir reports/
+          pytest --html=reports/report.html --self-contained-html --junitxml=reports/unit-test-results.xml --cov=. --cov-report=xml --cov-report=term-missing -v
       - name: Upload report artifact
         uses: actions/upload-artifact@v7.0.0
         with:
           name: Tests report
-          path: report.html
+          path: reports/report.html
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: Coverage report
+          path: reports/unit-test-results.xml
         
           
