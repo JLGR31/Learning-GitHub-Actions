@@ -27,7 +27,7 @@ jobs:
       - name: Run unit tests
         run: pytest --html=report.html --self-contained-html
       - name: Upload report artifact
-        uses: actions/upload-artifact@v3.2.2
+        uses: actions/upload-artifact@v7.0.0
         with:
           name: Tests report
           path: report.html
