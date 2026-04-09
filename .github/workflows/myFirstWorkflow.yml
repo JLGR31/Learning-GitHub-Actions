@@ -3,109 +3,76 @@ name: my-first-workflow
 # To get a trigger on every push in this repo in any branch
 on: 
   push:
-
-env:
-  ENV_TYPE: dev
-  APP_USER: JLGR
-  APP_PORT: 80
+    branches: 
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  job1:
-    name: JOB1
+  unit-tests:
+    name: Running unit tests
     runs-on: ubuntu-latest
     steps:
-      - name: Step-1
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+      - name: Setup python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
         run: |
-          pwd
-          ls -ltr
-          hostname
-      - name: Step-2 - Checkout
-        uses: actions/checkout@v5.0.0
-      - name: Step-3
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run unit tests
         run: |
-          echo `pwd` >> myartifact.txt
-          mkdir artifacts
-          echo `ls -ltr` >> artifacts/list.txt
-          echo `hostname` >> artifacts/hostname.txt
-      - name: Step-4 Upload Single file
+          mkdir reports/
+          pytest --html=reports/report.html --self-contained-html --junitxml=reports/unit-test-results.xml --cov=. --cov-report=xml --cov-report=term-missing -v
+      - name: Upload report artifact
         uses: actions/upload-artifact@v7.0.0
         with:
-          name: single_file
-          path: ./myartifact.txt
-      - name: Step-5 Upload from directory
+          name: Tests report
+          path: reports/report.html
+      - name: Upload coverage report artifact
         uses: actions/upload-artifact@v7.0.0
         with:
-          name: directory_artifacts
-          path: artifacts/
-      - name: Step-6 Upload from multiple paths
-        uses: actions/upload-artifact@v7.0.0
-        with:
-          name: multiple_paths
-          path: |
-            ./myartifact.txt
-            artifacts/
-      - name: Step-7 Upload from multiple paths with exclusions
-        uses: actions/upload-artifact@v7.0.0
-        with:
-          name: multiple_paths_with_exclusions
-          path: |
-            ./myartifact.txt
-            artifacts/
-            !**/hostname.txt
-  job2:
-    name: JOB2
-    needs: job1
+          name: Coverage report
+          path: reports/unit-test-results.xml
+  
+  codeql:
+    name: CodeQL security scan
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write # Required to upload the analysis result
+    strategy:
+      matrix:
+        language: ['python']
     steps:
-      - name: Checking current directory
-        run: |
-          pwd
-          ls -ltr
-      - name: Download single file artifact
-        uses: actions/download-artifact@v7.0.0
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+      - name:  Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with: 
-          name: single_file
-      - name: Checking current directory post download
-        run: |
-          pwd
-          ls -ltr
-      - name: Referring environments variables
-        run: |
-          echo "[INFO] Running Deployment for $ENV_TYPE with user $APP_USER."
-          echo "[INFO] Application is accesible on port $APP_PORT."
-      - name: Referring repository secret
-        run: |
-          echo "[INFO] Application password is ${{ secrets.APP_PASSWORD }}"
-  job3: 
-    name: JOB3
-    runs-on: ubuntu-latest
-    steps:
-      - name: Referring context or built-in variables
-        run: |
-          echo "[INFO] Triggered by ${{ github.event_name }}"
-          echo "[INFO] New changes are added by ${{ github.actor }} in ${{ github.ref_name }} branch"
-          echo "[INFO] Current step is running on ${{ runner.os }}"
-          echo "[INFO] Current job id is ${{ job.check_run_id }}"
-  staging:
-    name: STAGE DEPLOYMENT
-    runs-on: ubuntu-latest
-    steps:
-      - name: Referring Environments variables
-        run: echo "[INFO] Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}."
-      - name: Referring Environments secrets
-        run: echo "[INFO] Password for ${{vars.USER}} is ${{secrets.PASSWORD}}."
-    environment:
-        name: STAGING
-    if: github.ref == 'refs/heads/dev'
-  production:
-    name: PRODUCTION DEPLOYMENT
-    runs-on: ubuntu-latest
-    steps:
-      - name: Referring Environments variables
-        run: echo "[INFO] Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}."
-      - name: Referring Environments secrets
-        run: echo "[INFO] Password for ${{vars.USER}} is ${{secrets.PASSWORD}}."
-    environment:
-        name: PRODUCTION
-    if: github.ref == 'refs/heads/main'
+          languages: ${{ matrix.language }}
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "security"
 
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarQube Quality Gate Check
+        uses: SonarSource/sonarqube-scan-action@v6
+        env: 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
