@@ -21,7 +21,7 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn
 
 # Copy only necessary application code
