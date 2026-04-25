@@ -159,5 +159,5 @@ jobs:
       - name: Tag and push image to GHCR
         run: |
           IMAGE_TAGS="${{ needs.build.outputs.image-tags }}"
-          docker tag jlgr_app:${IMAGE_TAGS} ghcr.io/${{ github.repository_owner }}/jlgr_app:${IMAGE_TAGS}
-          docker push ghcr.io/${{ github.repository_owner }}/jlgr_app:${IMAGE_TAGS}
+          docker tag jlgr_app:${IMAGE_TAGS} ghcr.io/${{ github.repository_owner,, }}/jlgr_app:${IMAGE_TAGS}
+          docker push ghcr.io/${{ github.repository_owner,, }}/jlgr_app:${IMAGE_TAGS}
