@@ -9,6 +9,11 @@ on:
     branches:
       - main
 
+permissions:
+  actions: read
+  security-events: write
+  packages: write
+  contents: read
 jobs:
   ci-pipeline:
     uses: JLGR31/ReusableWorkflows/.github/workflows/ci-pipeline.yml@main
