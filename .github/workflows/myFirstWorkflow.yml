@@ -106,6 +106,7 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: jlgr_app:${{ steps.vars.outputs.IMAGE_TAGS }}
+          load: true
       - name: Save Docker Image as artifact
         run: docker save jlgr_app:${{ steps.vars.outputs.IMAGE_TAGS }} -o jlgr_app.tar
       - name: Upload docker Image Artifact
