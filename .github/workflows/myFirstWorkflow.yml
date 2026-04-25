@@ -135,5 +135,5 @@ jobs:
       - name: Tag and push image to DockerHub
         run: |
           IMAGE_TAGS="${{ needs.build.outputs.image-tags }}"
-          docker tag jlgr_app:${IMAGE_TAGS} ${DOCKERHUB_USERNAME}/jlgr_app:${IMAGE_TAGS}
-          docker push ${DOCKERHUB_USERNAME}/jlgr_app:${IMAGE_TAGS}
+          docker tag jlgr_app:${IMAGE_TAGS} ${{ secrets.DOCKERHUB_USERNAME }}/jlgr_app:${IMAGE_TAGS}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/jlgr_app:${IMAGE_TAGS}
