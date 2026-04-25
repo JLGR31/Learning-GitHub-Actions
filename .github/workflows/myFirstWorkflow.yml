@@ -156,8 +156,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }} # GitHub automatically creates a GITHUB_TOKEN secret to authenticate in the current repository. It has read/write permissions for packages, so it can be used to push to GHCR.
+      - name: Set lowercase owner
+        id: owner
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
       - name: Tag and push image to GHCR
         run: |
           IMAGE_TAGS="${{ needs.build.outputs.image-tags }}"
-          docker tag jlgr_app:${IMAGE_TAGS} ghcr.io/${{ github.repository_owner,, }}/jlgr_app:${IMAGE_TAGS}
-          docker push ghcr.io/${{ github.repository_owner,, }}/jlgr_app:${IMAGE_TAGS}
+          docker tag jlgr_app:${IMAGE_TAGS} ghcr.io/${{ steps.owner.outputs.owner }}/jlgr_app:${IMAGE_TAGS}
+          docker push ghcr.io/${{ steps.owner.outputs.owner }}/jlgr_app:${IMAGE_TAGS}
